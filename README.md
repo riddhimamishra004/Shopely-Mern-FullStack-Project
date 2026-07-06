@@ -3,7 +3,7 @@ riddhima
 ## Backend — Pure JavaScript (Terminal 1)
   cd shopely-backend
   npm install
-  npm run dev          -> http://localhost:5000
+  npm run dev          -> https://shopely-mern-fullstack-project-1.onrender.com
 
 ## Frontend (Terminal 2)
   cd shopely-frontend
@@ -17,7 +17,7 @@ riddhima
 
 ## Seed karne ke liye
   Admin se login karo, token lo
-  POST http://localhost:5000/api/seed
+  POST https://shopely-mern-fullstack-project-1.onrender.com/api/seed
   Header: Authorization: Bearer <token>
 
 
