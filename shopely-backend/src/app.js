@@ -5,9 +5,19 @@ import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 
 const app = express();
+const allowedOrigins = [
+  "https://shopely-mern-full-stack-project.vercel.app",
+  "https://shopely-mern-full-stack-project-7f4m8rmdv.vercel.app",
+];
 
 app.use(cors({
-  origin: "https://shopely-mern-full-stack-project.vercel.app",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 

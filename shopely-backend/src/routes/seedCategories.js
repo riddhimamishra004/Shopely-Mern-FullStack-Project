@@ -21,7 +21,7 @@ import { Category } from "../models/Category.js"; // adjust path if needed
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/shopely";
+const MONGO_URI = process.env.MONGODB_URI;
 
 // Turns mega-menu columns into a flat, deduped subcategories list
 // (name/slug), so categories that already have rich `columns` get
