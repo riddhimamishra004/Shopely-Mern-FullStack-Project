@@ -5,12 +5,12 @@ import toast from "react-hot-toast";
 
 import { useCart } from "../../hooks/useCart";
 import { formatCurrency } from "../../utils/formatCrrency";
+import api from "../../services/api";
 
 const PAYMENT_METHODS = [
   { id: "razorpay", label: "Pay Online", desc: "UPI, Card, Netbanking — sab ek jagah" },
   { id: "cod", label: "Cash on Delivery", desc: "Pay when your order arrives" },
 ];
-
 
 function loadRazorpayScript() {
   return new Promise((resolve) => {
@@ -31,7 +31,7 @@ export default function Checkout() {
 
   // ── Coupon ──
   const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState(null); // { code, discountType, discountValue, discountAmount }
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
@@ -43,17 +43,12 @@ export default function Checkout() {
     setApplyingCoupon(true);
     setCouponError("");
     try {
-      const res = await fetch("/api/coupons/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponInput.trim(), cartTotal }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Coupon apply nahi ho paya");
+      const res = await api.post("/coupons/apply", { code: couponInput.trim(), cartTotal });
+      const data = res.data;
       setAppliedCoupon(data);
       toast.success(data.message || "Coupon applied!");
     } catch (err) {
-      setCouponError(err.message);
+      setCouponError(err.response?.data?.message || "Coupon apply nahi ho paya");
       setAppliedCoupon(null);
     } finally {
       setApplyingCoupon(false);
@@ -127,34 +122,30 @@ export default function Checkout() {
     };
   }
 
-  async function handleCodOrder(token) {
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...buildOrderData(), paymentMethod: "cod" }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || "Order place nahi ho paya");
+  async function handleCodOrder() {
+    try {
+      await api.post("/orders", { ...buildOrderData(), paymentMethod: "cod" });
+    } catch (err) {
+      throw new Error(err.response?.data?.message || "Order place nahi ho paya");
     }
   }
 
-  async function handleRazorpayOrder(token) {
+  async function handleRazorpayOrder() {
     const scriptLoaded = await loadRazorpayScript();
     if (!scriptLoaded) throw new Error("Razorpay load nahi hua, internet check karo");
 
-    const createRes = await fetch("/api/orders/razorpay/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
+    let razorpayOrder;
+    try {
+      const createRes = await api.post("/orders/razorpay/create", {
         amount: orderTotal,
         itemsTotal: cartTotal,
         shippingCost: shipping,
         couponCode: appliedCoupon?.code || "",
-      }),
-    });
-    if (!createRes.ok) throw new Error("Payment shuru nahi ho paya");
-    const razorpayOrder = await createRes.json();
+      });
+      razorpayOrder = createRes.data;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || "Payment shuru nahi ho paya");
+    }
 
     return new Promise((resolve, reject) => {
       const rzp = new window.Razorpay({
@@ -172,20 +163,15 @@ export default function Checkout() {
         theme: { color: "#ea580c" },
         handler: async function (response) {
           try {
-            const verifyRes = await fetch("/api/orders/razorpay/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                orderData: buildOrderData(),
-              }),
+            await api.post("/orders/razorpay/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderData: buildOrderData(),
             });
-            if (!verifyRes.ok) throw new Error("Payment verify nahi hua");
             resolve();
           } catch (err) {
-            reject(err);
+            reject(new Error(err.response?.data?.message || "Payment verify nahi hua"));
           }
         },
         modal: {
@@ -207,11 +193,10 @@ export default function Checkout() {
     }
     setPlacing(true);
     try {
-      const token = localStorage.getItem("token");
       if (paymentMethod === "cod") {
-        await handleCodOrder(token);
+        await handleCodOrder();
       } else {
-        await handleRazorpayOrder(token);
+        await handleRazorpayOrder();
       }
       clearCart();
       toast.success("Order placed successfully! 🎉");
@@ -331,7 +316,6 @@ export default function Checkout() {
               </div>
               <hr className="my-4 border-stone-200" />
 
-              {/* Coupon */}
               <div>
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5">

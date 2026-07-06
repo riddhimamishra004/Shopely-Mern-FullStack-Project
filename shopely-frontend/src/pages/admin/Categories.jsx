@@ -7,7 +7,7 @@ import {
 import MegaMenuEditor from "../admin/MegaMenuEditor";
 import SubcategoryManager from "../admin/SubcategoryManager";
 
-const API_BASE = "/api"; // match your backend URL/port
+import api from "../../services/api"; 
 
 function slugify(str) {
   return str.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
@@ -200,7 +200,7 @@ export default function Categories() {
   function fetchCategories() {
     setLoading(true);
     axios
-      .get(`${API_BASE}/categories/admin`, { headers: authHeaders() })
+      .get("/categories/admin", { headers: authHeaders() })
       .then((res) => setCategories(res.data))
       .catch(() => showToast("Failed to load categories"))
       .finally(() => setLoading(false));
@@ -217,12 +217,12 @@ export default function Categories() {
 
   async function handleSave(data) {
     if (modal.mode === "add") {
-      const res = await axios.post(`${API_BASE}/categories`, data, { headers: authHeaders() });
+      const res = await api.post("/categories", data, { headers: authHeaders() });
       setCategories((prev) => [...prev, res.data]);
       showToast("Category add ho gayi!");
     } else {
-      const res = await axios.put(
-        `${API_BASE}/categories/${modal.data._id}`,
+      const res = await api.patch(
+        `/categories/${modal.data._id}`,
         data,
         { headers: authHeaders() }
       );
@@ -235,7 +235,7 @@ export default function Categories() {
   }
 
   async function handleDelete() {
-    await axios.delete(`${API_BASE}/categories/${deleteTarget._id}`, {
+    await api.delete(`/categories/${deleteTarget._id}`, {
       headers: authHeaders(),
     });
     setCategories((prev) => prev.filter((c) => c._id !== deleteTarget._id));

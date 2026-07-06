@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../services/api";
 import * as LucideIcons from "lucide-react";
 import { Package } from "lucide-react";
 
-const API_BASE = "/api";
 
 /**
  * Category.icon in the DB is stored as a plain string, e.g. "Shirt", "Smartphone".
@@ -23,8 +22,7 @@ export function useCategories() {
   useEffect(() => {
     let cancelled = false;
 
-    axios
-      .get(`${API_BASE}/categories`) // public route — only isActive: true categories
+   api.get("/categories")
       .then((res) => {
         if (cancelled) return;
 

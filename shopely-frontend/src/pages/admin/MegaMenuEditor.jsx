@@ -3,9 +3,7 @@ import axios from "axios";
 import {
   X, Plus, Trash2, GripVertical, Check, Loader2, AlertCircle, LayoutGrid,
 } from "lucide-react";
-
-const API_BASE = "/api";
-
+import api from "../../services/api";
 function authHeaders() {
   const token = localStorage.getItem("token");
   return { Authorization: `Bearer ${token}` };
@@ -102,7 +100,7 @@ export default function MegaMenuEditor({ category, onSaved, onClose }) {
     setError("");
     try {
       const res = await axios.put(
-        `${API_BASE}/categories/${category._id}/columns`,
+       `/categories/${category._id}/columns`,
         { columns },
         { headers: authHeaders() }
       );

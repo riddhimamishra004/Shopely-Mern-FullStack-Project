@@ -4,7 +4,7 @@ import {
   X, Plus, Trash2, Pencil, Check, Loader2, AlertCircle, FolderTree, Ban,
 } from "lucide-react";
 
-const API_BASE = "/api";
+ import api from "../../services/api";
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -41,7 +41,7 @@ export default function SubcategoryManager({ category, onSaved, onClose }) {
     setError("");
     try {
       const res = await axios.post(
-        `${API_BASE}/categories/${category._id}/subcategories`,
+        `/categories/${category._id}/subcategories`,
         { name: newName.trim() },
         { headers: authHeaders() }
       );
@@ -66,7 +66,7 @@ export default function SubcategoryManager({ category, onSaved, onClose }) {
     setError("");
     try {
       const res = await axios.put(
-        `${API_BASE}/categories/${category._id}/subcategories/${subId}`,
+        `/categories/${category._id}/subcategories/${subId}`,
         { name: editingName.trim() },
         { headers: authHeaders() }
       );
@@ -101,7 +101,7 @@ export default function SubcategoryManager({ category, onSaved, onClose }) {
     setError("");
     try {
       const res = await axios.delete(
-        `${API_BASE}/categories/${category._id}/subcategories/${subId}`,
+       `/categories/${category._id}/subcategories/${sub._id}`,
         { headers: authHeaders() }
       );
       applyUpdated(res.data);
