@@ -1,0 +1,23 @@
+# Shopely — Full Stack E-Commerce
+riddhima
+## Backend — Pure JavaScript (Terminal 1)
+  cd shopely-backend
+  npm install
+  npm run dev          -> http://localhost:5000
+
+## Frontend (Terminal 2)
+  cd shopely-frontend
+  npm install
+  npm run dev          -> http://localhost:5173
+
+## Admin Login (seeding ke baad)
+  URL:      http://localhost:5173/admin/login
+  Email:    admin@shopely.com
+  Password: admin123
+
+## Seed karne ke liye
+  Admin se login karo, token lo
+  POST http://localhost:5000/api/seed
+  Header: Authorization: Bearer <token>
+
+
